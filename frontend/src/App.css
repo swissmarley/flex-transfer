@@ -1,0 +1,152 @@
+/* App.css */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: "Segoe UI", Roboto, sans-serif;
+  background: url('https://images.unsplash.com/photo-1557683316-973673baf926') no-repeat center center fixed;
+  background-size: cover;
+}
+
+.app-container {
+  min-height: 100vh;
+  padding: 20px;
+  background-color: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.background-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #f5f7fa;
+  z-index: -1;
+}
+
+.upload-box {
+  position: relative;
+  width: 90%;
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 24px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  max-height: 90vh;
+}
+
+.upload-box-header {
+  position: sticky;
+  top: 0;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(5px);
+  padding: 16px 0;
+  margin: -24px -24px 24px -24px;
+  border-radius: 16px 16px 0 0;
+  z-index: 10;
+}
+
+.file-list {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding-right: 16px;
+  margin-top: 16px;
+}
+
+.file-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.file-list::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.file-list::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+.file-list::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+.glass-effect {
+  background: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+
+.title {
+  font-size: 26px;
+  margin-bottom: 10px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.subtitle {
+  font-size: 14px;
+  color: #e0e0e0;
+  margin-bottom: 30px;
+}
+
+.file-input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.4);
+  color: #333;
+  cursor: pointer;
+}
+
+.file-input:hover {
+  border-color: #90cdf4;
+}
+
+.upload-button {
+  width: 100%;
+  padding: 12px;
+  font-weight: bold;
+  border: none;
+  background: linear-gradient(to right, #667eea, #764ba2);
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.upload-button:hover {
+  background: linear-gradient(to right, #5a67d8, #6b46c1);
+}
+
+.download-section {
+  margin-top: 20px;
+  background: rgba(240, 253, 244, 0.6);
+  padding: 10px;
+  border: 1px solid #bbf7d0;
+  border-radius: 8px;
+  color: #065f46;
+}
+
+.download-text {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.download-link {
+  color: #047857;
+  word-break: break-all;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
