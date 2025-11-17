@@ -267,12 +267,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 👨‍💻 Author
-
-**Nakya** - [@swissmarley](https://github.com/swissmarley)
-
----
-
 ## 📝 Notes
 
 - **Production Deployment**: For production use, update CORS settings, enforce HTTPS, and configure a proper reverse proxy (nginx, Caddy)
