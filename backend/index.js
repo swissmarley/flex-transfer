@@ -108,7 +108,7 @@ async function getOrCreateEncryptionKey() {
 const IV_LENGTH = 16;
 
 // Aggiorna le funzioni di crittografia per usare la chiave corretta
-async function encryptFile(inputPath, outputPath, keyId) {
+async function encryptFile(inputPath, outputPath) {
   const key = await getOrCreateEncryptionKey();
   const iv = crypto.randomBytes(IV_LENGTH);
   const cipher = crypto.createCipheriv('aes-256-cbc', key, iv);
@@ -180,7 +180,9 @@ app.use(cors({
   methods: ['GET', 'POST'],
   credentials: true
 }));
-app.use(express.json()); // Aggiungi questo middleware per gestire JSON
+app.options('*', cors());
+app.use(express.json());
+
 
 // API routes
 app.post('/api/verify-password/:groupId', async (req, res) => {
