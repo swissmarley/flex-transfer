@@ -90,10 +90,10 @@ let ENCRYPTION_KEY;
 // Funzione per ottenere o creare una chiave di crittografia
 async function getOrCreateEncryptionKey() {
   if (ENCRYPTION_KEY) return ENCRYPTION_KEY;
-  
+
   // Cerca una chiave esistente
   const keyResult = await pool.query('SELECT key_value FROM encryption_keys ORDER BY created_at DESC LIMIT 1');
-  
+
   if (keyResult.rows.length > 0) {
     ENCRYPTION_KEY = keyResult.rows[0].key_value;
   } else {
@@ -101,7 +101,7 @@ async function getOrCreateEncryptionKey() {
     ENCRYPTION_KEY = crypto.randomBytes(32);
     await pool.query('INSERT INTO encryption_keys (key_value) VALUES ($1)', [ENCRYPTION_KEY]);
   }
-  
+
   return ENCRYPTION_KEY;
 }
 
@@ -140,7 +140,7 @@ async function decryptFile(inputPath, outputPath, keyValue) {
 
         const decipher = crypto.createDecipheriv('aes-256-cbc', keyValue, iv);
         const output = fs.createWriteStream(outputPath);
-        
+
         output.on('error', (err) => {
           reject(err);
         });
@@ -176,7 +176,7 @@ async function sendDownloadEmail(to, links) {
 
 const app = express();
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
   methods: ['GET', 'POST'],
   credentials: true
 }));
@@ -188,13 +188,13 @@ app.use(express.json());
 app.post('/api/verify-password/:groupId', async (req, res) => {
   const { groupId } = req.params;
   const { password } = req.body;
-  
+
   try {
     const result = await pool.query('SELECT password FROM files WHERE group_id = $1 LIMIT 1', [groupId]);
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Gruppo non trovato' });
     }
-    
+
     if (result.rows[0].password === password) {
       res.json({ valid: true });
     } else {
@@ -208,13 +208,13 @@ app.post('/api/verify-password/:groupId', async (req, res) => {
 
 app.get('/api/check-password/:groupId', async (req, res) => {
   const { groupId } = req.params;
-  
+
   try {
     const result = await pool.query('SELECT password FROM files WHERE group_id = $1 LIMIT 1', [groupId]);
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Gruppo non trovato' });
     }
-    
+
     res.json({ hasPassword: !!result.rows[0].password });
   } catch (err) {
     console.error('Errore nel controllo della password:', err);
@@ -227,18 +227,18 @@ async function checkPassword(req, res, next) {
   const { groupId } = req.params;
   // Controlla sia header che query parameter per la password
   const providedPassword = req.headers['x-password'] || req.query.password || null;
-  
+
   try {
     const result = await pool.query('SELECT password FROM files WHERE group_id = $1 LIMIT 1', [groupId]);
     if (result.rows.length === 0) {
       return res.status(404).json({ message: 'Gruppo non trovato' });
     }
-    
+
     // Se il file è protetto da password ma non è stata fornita o non è corretta
     if (result.rows[0].password && result.rows[0].password !== providedPassword) {
       return res.status(401).send('Password non valida');
     }
-    
+
     next();
   } catch (err) {
     console.error('Errore nella verifica della password:', err);
@@ -297,21 +297,21 @@ app.get('/group/:groupId/download/:fileId', checkPassword, async (req, res) => {
       JOIN encryption_keys k ON f.key_id = k.id 
       WHERE f.group_id = $1 AND f.id = $2
     `, [groupId, fileId]);
-    
+
     if (result.rows.length === 0) return res.status(404).send('File non trovato.');
     const file = result.rows[0];
-    
+
     if (file.expiration && new Date(file.expiration) < new Date()) {
       return res.status(410).send('Link scaduto.');
     }
-    
+
     if (!fs.existsSync(file.encrypted_path)) {
       return res.status(404).send('File non trovato sul server.');
     }
-    
+
     const tempPath = file.encrypted_path + '.dec';
     await decryptFile(file.encrypted_path, tempPath, file.key_value);
-    
+
     res.download(tempPath, file.original_name, (err) => {
       // Cleanup temp file in both success and error cases
       if (fs.existsSync(tempPath)) {
@@ -332,7 +332,7 @@ app.get('/group/:groupId/download/:fileId', checkPassword, async (req, res) => {
 app.get('/group/:groupId/download-zip', checkPassword, async (req, res) => {
   const { groupId } = req.params;
   const tempFiles = [];
-  
+
   try {
     const result = await pool.query(`
       SELECT f.*, k.key_value 
@@ -340,7 +340,7 @@ app.get('/group/:groupId/download-zip', checkPassword, async (req, res) => {
       JOIN encryption_keys k ON f.key_id = k.id 
       WHERE f.group_id = $1
     `, [groupId]);
-    
+
     if (result.rows.length === 0) return res.status(404).send('Nessun file trovato per questo link.');
     const now = new Date();
     const validFiles = result.rows.filter(f => !f.expiration || new Date(f.expiration) > now);
@@ -352,12 +352,12 @@ app.get('/group/:groupId/download-zip', checkPassword, async (req, res) => {
         return res.status(404).send('Alcuni file non sono più disponibili sul server.');
       }
     }
-    
+
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', `attachment; filename="securetransfer_${groupId}.zip"`);
-    
+
     const archive = archiver('zip', { zlib: { level: 9 } });
-    
+
     // Handle archiver errors
     archive.on('error', (err) => {
       console.error('Errore durante la creazione del zip:', err);
@@ -366,9 +366,9 @@ app.get('/group/:groupId/download-zip', checkPassword, async (req, res) => {
         res.status(500).send('Errore durante la creazione del file zip.');
       }
     });
-    
+
     archive.pipe(res);
-    
+
     // Decrypt all files first
     for (const file of validFiles) {
       const tempPath = file.encrypted_path + '.dec';
@@ -376,7 +376,7 @@ app.get('/group/:groupId/download-zip', checkPassword, async (req, res) => {
       tempFiles.push(tempPath);
       archive.file(tempPath, { name: file.relative_path || file.original_name });
     }
-    
+
     await archive.finalize();
   } catch (err) {
     console.error('Errore durante il download zip:', err);
@@ -427,7 +427,7 @@ app.post('/upload', multer.array('files'), async (req, res) => {
     const files = req.files;
     const { expiration, email, sendType, password } = req.body;
     if (!files || files.length === 0) return res.status(400).send('No files uploaded.');
-    
+
     const groupId = uuidv4();
     const key = await getOrCreateEncryptionKey();
     const keyResult = await pool.query('SELECT id FROM encryption_keys WHERE key_value = $1', [key]);
@@ -437,12 +437,12 @@ app.post('/upload', multer.array('files'), async (req, res) => {
       const encryptedPath = file.path + '.enc';
       await encryptFile(file.path, encryptedPath, keyId);
       fs.unlinkSync(file.path);
-      
+
       let relativePath = file.originalname;
       if (file.fieldname === 'files' && file.originalname && file.relativePath) {
         relativePath = file.relativePath;
       }
-      
+
       await pool.query(
         `INSERT INTO files (filename, original_name, relative_path, encrypted_path, key_id, expiration, email, group_id, password) 
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
@@ -459,8 +459,9 @@ app.post('/upload', multer.array('files'), async (req, res) => {
         ]
       );
     }
-    
-    const groupLink = `http://localhost:3000/group/${groupId}`;
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const groupLink = `${frontendUrl}/group/${groupId}`;
     if (sendType === 'email' && email) {
       try {
         await sendDownloadEmail(email, [{ link: groupLink, originalName: 'Scarica i tuoi file' }]);
