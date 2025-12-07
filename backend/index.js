@@ -487,8 +487,8 @@ app.get('*', (req, res) => {
 // Avvia il server solo dopo l'inizializzazione del database
 initializeDatabase()
   .then(() => {
-    app.listen(5003, () => {
-      console.log('Server running on http://localhost:5003');
+    app.listen(5000, () => {
+      console.log('Server running on port 5000');
     });
   })
   .catch(err => {

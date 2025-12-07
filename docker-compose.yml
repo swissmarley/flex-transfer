@@ -34,7 +34,7 @@ services:
         - REACT_APP_API_URL=${REACT_APP_API_URL}
     container_name: flex-transfer-frontend
     ports:
-      - "3000:3000"
+      - "3000:80"
     volumes:
       - ./frontend:/app
       - /app/node_modules
