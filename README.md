@@ -40,7 +40,7 @@ A secure, self-hosted file transfer application with end-to-end encryption. Buil
 
 2. **Environment Setup**
    ```bash
-   cd
+   cd backend
    cp .env.template .env
    ```
    
