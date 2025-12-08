@@ -13,14 +13,14 @@ import AnimatedBackground from "./components/AnimatedBackground";
 
 const fileTypeIcon = (name) => {
   const ext = name.split('.').pop().toLowerCase();
-  if (["jpg","jpeg","png","gif","bmp","svg","webp"].includes(ext)) return "🖼️";
+  if (["jpg", "jpeg", "png", "gif", "bmp", "svg", "webp"].includes(ext)) return "🖼️";
   if (["pdf"].includes(ext)) return "📄";
-  if (["zip","rar","7z","tar","gz"].includes(ext)) return "🗜️";
-  if (["mp3","wav","ogg"].includes(ext)) return "🎵";
-  if (["mp4","avi","mov","wmv","mkv"].includes(ext)) return "🎬";
-  if (["doc","docx"].includes(ext)) return "📝";
-  if (["xls","xlsx"].includes(ext)) return "📊";
-  if (["ppt","pptx"].includes(ext)) return "📈";
+  if (["zip", "rar", "7z", "tar", "gz"].includes(ext)) return "🗜️";
+  if (["mp3", "wav", "ogg"].includes(ext)) return "🎵";
+  if (["mp4", "avi", "mov", "wmv", "mkv"].includes(ext)) return "🎬";
+  if (["doc", "docx"].includes(ext)) return "📝";
+  if (["xls", "xlsx"].includes(ext)) return "📊";
+  if (["ppt", "pptx"].includes(ext)) return "📈";
   return "📁";
 };
 
@@ -54,7 +54,7 @@ export default function App() {
     const fileParam = params.get('file');
     if (fileParam) {
       // Recupera info file dal backend
-      fetch(`http://localhost:5003/download/${fileParam}`)
+      fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5003'}/download/${fileParam}`)
         .then(res => {
           if (res.status === 410) setStatus('Link scaduto.');
           else if (res.status === 404) setStatus('File non trovato.');
@@ -67,7 +67,7 @@ export default function App() {
   useEffect(() => {
     const groupId = getGroupIdFromPath();
     if (groupId) {
-      fetch(`http://localhost:5003/api/check-password/${groupId}`)
+      fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5003'}/api/check-password/${groupId}`)
         .then(res => res.json())
         .then(data => {
           setIsPasswordProtected(data.hasPassword);
@@ -88,8 +88,8 @@ export default function App() {
       if (isPasswordValid) {
         headers['x-password'] = enteredPassword;
       }
-      
-      fetch(`http://localhost:5003/api/group/${groupId}`, { 
+
+      fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5003'}/api/group/${groupId}`, {
         method: 'GET',
         headers: headers
       })
@@ -163,7 +163,7 @@ export default function App() {
   }, []);
 
   const handlePasswordSubmit = (groupId) => {
-    fetch(`http://localhost:5003/api/verify-password/${groupId}`, {
+    fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:5003'}/api/verify-password/${groupId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: enteredPassword })
@@ -196,7 +196,7 @@ export default function App() {
     formData.append('sendType', sendType);
     if (password) formData.append('password', password);
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', 'http://localhost:5003/upload');
+    xhr.open('POST', `${process.env.REACT_APP_API_URL || 'http://localhost:5003'}/upload`);
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) {
         setProgress(Math.round((e.loaded / e.total) * 100));
@@ -227,12 +227,12 @@ export default function App() {
 
   const downloadFile = (groupId, fileId) => {
     const passwordParam = isPasswordValid ? `?password=${encodeURIComponent(enteredPassword)}` : '';
-    window.location.href = `http://localhost:5003/group/${groupId}/download/${fileId}${passwordParam}`;
+    window.location.href = `${process.env.REACT_APP_API_URL || 'http://localhost:5003'}/group/${groupId}/download/${fileId}${passwordParam}`;
   };
 
   const downloadZip = (groupId) => {
     const passwordParam = isPasswordValid ? `?password=${encodeURIComponent(enteredPassword)}` : '';
-    window.location.href = `http://localhost:5003/group/${groupId}/download-zip${passwordParam}`;
+    window.location.href = `${process.env.REACT_APP_API_URL || 'http://localhost:5003'}/group/${groupId}/download-zip${passwordParam}`;
   };
 
   return (
@@ -244,9 +244,9 @@ export default function App() {
           <Typography variant="h4" align="center" gutterBottom>Secure File Transfer</Typography>
           <Typography variant="subtitle1" align="center" gutterBottom>Invia file e cartelle con crittografia end-to-end</Typography>
           {!getGroupIdFromPath() && (
-            <RadioGroup row value={sendType} onChange={e=>setSendType(e.target.value)} sx={{ justifyContent: 'center', mb: 2 }}>
-              <FormControlLabel value="link" control={<Radio icon={<LinkIcon />} checkedIcon={<LinkIcon color="primary"/>}/>} label="Solo link" />
-              <FormControlLabel value="email" control={<Radio icon={<EmailIcon />} checkedIcon={<EmailIcon color="primary"/>}/>} label="Invia email" />
+            <RadioGroup row value={sendType} onChange={e => setSendType(e.target.value)} sx={{ justifyContent: 'center', mb: 2 }}>
+              <FormControlLabel value="link" control={<Radio icon={<LinkIcon />} checkedIcon={<LinkIcon color="primary" />} />} label="Solo link" />
+              <FormControlLabel value="email" control={<Radio icon={<EmailIcon />} checkedIcon={<EmailIcon color="primary" />} />} label="Invia email" />
             </RadioGroup>
           )}
         </Box>
@@ -259,9 +259,9 @@ export default function App() {
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               sx={{ border: '2px dashed #90caf9', borderRadius: 2, p: 2, mb: 2, textAlign: 'center', bgcolor: '#e3f2fd', cursor: 'pointer' }}
-              onClick={()=>document.getElementById('file-input').click()}
+              onClick={() => document.getElementById('file-input').click()}
             >
-              <CloudUploadIcon color="primary" sx={{ fontSize: 40 }}/>
+              <CloudUploadIcon color="primary" sx={{ fontSize: 40 }} />
               <Typography variant="body1">Trascina qui file/cartelle o clicca per selezionare</Typography>
               <input
                 id="file-input"
@@ -305,13 +305,13 @@ export default function App() {
               color="primary"
               startIcon={<CloudUploadIcon />}
               onClick={uploadFiles}
-              disabled={loading || !files.length || (sendType==='email' && !email)}
+              disabled={loading || !files.length || (sendType === 'email' && !email)}
               fullWidth
               sx={{ mt: 2, mb: 2 }}
             >
               {loading ? 'Caricamento...' : 'Carica File/Cartella'}
             </Button>
-            {loading && <LinearProgress variant="determinate" value={progress} sx={{ mb: 2 }}/>} 
+            {loading && <LinearProgress variant="determinate" value={progress} sx={{ mb: 2 }} />}
             {status && <Typography color="primary" align="center" sx={{ mb: 2 }}>{status}</Typography>}
             {files.length > 0 && (
               <Box className="file-list" sx={{ mb: 2 }}>
@@ -321,10 +321,10 @@ export default function App() {
                     <ListItem key={i}>
                       <ListItemIcon>
                         {/^image\//.test(f.type) ? (
-                          <img src={getImagePreview(f)} alt="preview" style={{width:32,height:32,objectFit:'cover',borderRadius:4}} />
-                        ) : <InsertDriveFileIcon color="action"/>}
+                          <img src={getImagePreview(f)} alt="preview" style={{ width: 32, height: 32, objectFit: 'cover', borderRadius: 4 }} />
+                        ) : <InsertDriveFileIcon color="action" />}
                       </ListItemIcon>
-                      <ListItemText primary={f.webkitRelativePath || f.name} secondary={`${(f.size/1024/1024).toFixed(2)} MB`} />
+                      <ListItemText primary={f.webkitRelativePath || f.name} secondary={`${(f.size / 1024 / 1024).toFixed(2)} MB`} />
                     </ListItem>
                   ))}
                 </List>
@@ -382,12 +382,12 @@ export default function App() {
                           <ListItemIcon>
                             {fileTypeIcon(f.originalName)}
                           </ListItemIcon>
-                          <ListItemText 
+                          <ListItemText
                             primary={f.relativePath || f.originalName}
-                            secondary={`${(f.size/1024/1024).toFixed(2)} MB`}
+                            secondary={`${(f.size / 1024 / 1024).toFixed(2)} MB`}
                             sx={{ wordBreak: 'break-all' }}
                           />
-                          <IconButton 
+                          <IconButton
                             color="primary"
                             onClick={() => downloadFile(getGroupIdFromPath(), f.id)}
                           >
