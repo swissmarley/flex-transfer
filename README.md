@@ -38,10 +38,10 @@ A secure, self-hosted file transfer application with end-to-end encryption. Buil
    cd flex-transfer
    ```
 
-2. **Backend Setup**
+2. **Environment Setup**
    ```bash
-   cd backend
-   cp .env.example .env
+   cd
+   cp .env.template .env
    ```
    
    Edit `.env` with your configuration:
@@ -85,7 +85,8 @@ A secure, self-hosted file transfer application with end-to-end encryption. Buil
 
 1. **Prepare environment file**
    ```bash
-   cp backend/.env.example backend/.env
+   cp .env.template .env
+   cp backend/.env.template backend/.env
    ```
    
    Configure the `.env` file with your database and SMTP credentials.
